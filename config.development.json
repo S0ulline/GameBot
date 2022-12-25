@@ -1,0 +1,4 @@
+{
+  "BOT_API_TOKEN": "<enter your bot api token>",
+  "POSTGRESQL_CONNECT": "<enter your PostgreSQL>"
+}
