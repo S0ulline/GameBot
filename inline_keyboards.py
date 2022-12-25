@@ -32,7 +32,7 @@ DICE_BET_BTN_GROUP = [types.InlineKeyboardButton(text="Выбрать число
 keyboard_dice = types.InlineKeyboardMarkup(row_width=1)
 keyboard_dice.add(*DICE_BET_BTN_GROUP)
 
-CHOOSE_NUMBER_BTN_GROUP = [types.InlineKeyboardButton(text="3", callback_data="3", ),
+CHOOSE_NUMBER_BTN_GROUP = [types.InlineKeyboardButton(text="3", callback_data="3"),
                            types.InlineKeyboardButton(text="4", callback_data="4"),
                            types.InlineKeyboardButton(text="5", callback_data="5"),
                            types.InlineKeyboardButton(text="6", callback_data="6"),
