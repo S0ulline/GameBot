@@ -31,23 +31,32 @@ async def start_msg(message: types.Message):
         if win_status:
             reset_win_status = user.reset_win
             if reset_win_status:
-                await message.answer(text="Не балуйся❗")
+                await message.answer(text="Не балуйся❗\nЯ уже дал тебе все что нужно.")
             else:
                 user.reset_win = True
                 db.save_changes()
-                await message.answer(text="Окно игр уже запущенно\n"
+                await message.answer(text="ВНИМАНИЕ❗❗❗\nОкно игр уже запущено выше🙄\n"
                                           "Если у вас возникла ошибка нажмите кнопку ниже⬇",
                                      reply_markup=kb.keyboard_reset)
             return
-        window_id = await message.answer(text="Начальное сообщение", reply_markup=kb.keyboard_info_games)
+        window_id = await message.answer(text=f'Привет, я LYbot👋"\n'
+                                              f'Со мной ты можешь сыграть в азартные мини-игры🎰\n'
+                                              f'Тут нет подкруток, нет реальных денег, все зависит только от твоей удачи🍀\n'
+                                              f'\n\nВаш баланс на текущий момент: <b>{user.balance}</b>\n'
+                                              f'Играй, смотри все не проиграй😄\nУспехов✊',
+                                         reply_markup=kb.keyboard_info_games, parse_mode='HTML')
     else:
         user = User(id=message.from_user.id,
                     fullname=message.from_user.full_name,
                     username=message.from_user.username,
                     balance=5000)
         db.user_repository.add(user)
-        window_id = await message.answer(text="Начальное сообщение\nДобро пожаловать\n"
-                                              f"Баланс {5000}", reply_markup=kb.keyboard_info_games)
+        window_id = await message.answer(text=f'Привет, я LYbot👋"\n'
+                                              f'Со мной ты можешь сыграть в азартные мини-игры🎰 (Количество игр будут меняться и добавляться с каждым обновлением)\n'
+                                              f'Тут нет подкруток, нет реальных денег, все зависит только от твоей удачи🍀\n'
+                                              f'\n\nВаш баланс на текущий момент: <b>{user.balance}</b>\n'
+                                              f'Играй, смотри все не проиграй😄\nУспехов✊',
+                                         reply_markup=kb.keyboard_info_games, parse_mode='HTML')
     user.window_id = window_id.message_id
     user.window_activity = True
     db.save_changes()
@@ -55,12 +64,25 @@ async def start_msg(message: types.Message):
 
 @dp.callback_query_handler(text="dice_game")  # Правила игры в кости
 async def dice_game(call: types.CallbackQuery):
-    await call.message.edit_text(text="Правила игры в кости", reply_markup=kb.keyboard_info_dice)
+    await call.message.edit_text(text='Добро пожаловать в игру "Кости🎲🎲🎲"\n'
+                                      'В этой мини-игре вам предстоит угадать сумму кубиков\n'
+                                      '(Это начальная версия мини-игры которая будет со временем улучшаться)\n\n'
+                                      'ПРАВИЛА❗\n'
+                                      '1) Сделал ставку\n'
+                                      '2) Угадываешь сумму выпавшую на 3-х кубиках\n'
+                                      '3) Выигрываешь в 10 раз больше. Все просто😏',
+                                 reply_markup=kb.keyboard_info_dice)
 
 
 @dp.callback_query_handler(text="back")  # Начальное сообщение вызываемое через кнопку
 async def back(call: types.CallbackQuery):
-    await call.message.edit_text(text="Начальное сообщение", reply_markup=kb.keyboard_info_games)
+    user = db.user_repository.get(call.message.from_user.id)
+    await call.message.edit_text(text=f'Привет, я LYbot👋"\n'
+                                      f'Со мной ты можешь сыграть в азартные мини-игры🎰 (Количество игр будут меняться и добавляться с каждым обновлением)\n'
+                                      f'Тут нет подкруток, нет реальных денег, все зависит только от твоей удачи🍀\n'
+                                      f'\n\nВаш баланс на текущий момент: <b>{user.balance}</b>\n'
+                                      f'Играй, смотри все не проиграй😄\nУспехов✊',
+                                 reply_markup=kb.keyboard_info_games, parse_mode='HTML')
 
 
 @dp.callback_query_handler(text="dice_game_start")  # Начало игры в кости
@@ -74,8 +96,8 @@ async def dice_game_start(call: types.CallbackQuery):
     bet = user_dice.bet
     balance = user.balance
     with contextlib.suppress(MessageNotModified):
-        await call.message.edit_text(text=f'Начало игры в кости\nСтавка: {bet}\nБаланс: {balance}',
-                                     reply_markup=kb.keyboard_dice)
+        await call.message.edit_text(text=f'Начало игры в кости🎲\nВаша ставка: <b>{bet}</b>\nБаланс: <b>{balance}</b>',
+                                     reply_markup=kb.keyboard_dice, parse_mode='HTML')
     db.save_changes()
 
 
@@ -94,7 +116,7 @@ async def dice_bet_selected(call: types.CallbackQuery):
         user_dice.bet = balance
     else:
         if Decimal(bet_request) > balance:
-            await call.answer(text="Ставка не может быть больше баланса", show_alert=True)
+            await call.answer(text="Ставка не может быть больше баланса😐", show_alert=True)
         else:
             user_dice.bet = Decimal(bet_request)
     db.save_changes()
@@ -108,12 +130,12 @@ async def dice_choose_a_number(call: types.CallbackQuery):
     bet = user_dice.bet
     balance = user.balance
     if bet > balance:
-        await call.answer(text="Пожалуйста измените ставку", show_alert=True)
+        await call.answer(text="Пожалуйста измените ставку😐", show_alert=True)
         db.save_changes()
         await dice_game_start(call)
     else:
         if bet <= 0:
-            await call.answer(text="Ставка не может быть меньше или равняться нулю", show_alert=True)
+            await call.answer(text="Ставка не может быть меньше или равняться нулю😐", show_alert=True)
             db.save_changes()
             await dice_game_start(call)
         else:

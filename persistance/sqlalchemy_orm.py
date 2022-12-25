@@ -26,7 +26,7 @@ class User(Entity):
         user_dice = db.user_dice_info_repository.get(self.id)
         bet = user_dice.bet
         number = call.data
-        await call.message.edit_text(text=f'Выбрано число: {number}\nЗапускаем процесс броска...')
+        await call.message.edit_text(text=f'Выбрано число: <b>{number}</b>\nЗапускаем процесс броска...', parse_mode='HTML')
         await asyncio.sleep(2)
         await call.message.delete()
         dice_1 = await call.message.answer_dice(emoji='🎲')
